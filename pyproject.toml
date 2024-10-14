@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling==1.25.0", "hatch-vcs==0.4.0"]
+build-backend = 'hatchling.build'
+
+[project]
+name = "BentoMoshi"
+version = "0.1.0"
+description = "BentoMoshi: Running Moshi with BentoML"
+requires-python = ">=3.10"
+dependencies = [
+  "bentoml @ git+https://github.com/bentoml/BentoML.git@main",
+  "fastapi==0.114.1",
+  "huggingface-hub[hf-transfer]>=0.24.7",
+  "moshi==0.1.0",
+  "sentencepiece==0.2.0",
+  "sphn==0.1.4",
+  "torch>=2.4.1",
+]
+
+[project.scripts]
+server = "bentomoshi.service:main"
+client = "bentomoshi.client:main"
+
+[tool.uv]
+dev-dependencies = ["ipython>=8.18.0", "mypy>=1.12.0", "ruff>=0.6.9"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+[tool.hatch.build.targets.wheel]
+only-include = ["bentomoshi"]
+[tool.hatch.build.targets.sdist]
+exclude = ["/.git_archival.txt", "/.python-version", "*.wav", "/uv.lock"]
+
+[tool.bentoml.build]
+service = "bentomoshi.service:Moshi"
+include = ["bentomoshi/*.py"]
+[tool.bentoml.build.labels]
+owner = "bentoml-team"
+stage = "demo"
+[tool.bentoml.build.python]
+lock_packages = false
+[tool.bentoml.build.docker]
+python_version = "3.11"
+system_packages = ['build-essential']
+[[tool.bentoml.build.envs]]
+name = "HF_HUB_ENABLE_HF_TRANSFER"
+value = "1"
