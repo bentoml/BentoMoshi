@@ -1,0 +1,15 @@
+service: 'service:Moshi'
+labels:
+  owner: bentoml-team
+  stage: demo
+include:
+  - '*.py'
+  - 'pyproject.toml'
+python:
+  requirements_txt: './requirements.txt'
+  lock_packages: false
+docker:
+  python_version: '3.12'
+envs:
+  - name: HF_HUB_ENABLE_HF_TRANSFER
+    value: 1
