@@ -239,7 +239,7 @@ sphn==0.1.4
     # via
     #   bentomoshi (pyproject.toml)
     #   moshi
-starlette==0.38.6
+starlette==0.40.0
     # via
     #   bentoml
     #   fastapi
