@@ -3,15 +3,17 @@
 import asyncio, queue, sys, signal, os, urllib.parse
 import sphn, aiohttp, sounddevice as sd, numpy as np
 
-if (URL:=os.getenv("URL")) is None:raise Exception("URL must be set")
+if (URL := os.getenv('URL')) is None:
+  raise Exception('URL must be set')
 parsed = urllib.parse.urlparse(URL)
 
 # Global flag for shutdown
 shutdown_flag = asyncio.Event()
 
 # ANSI escape codes for colored text
-GREEN = "\033[92m"
-RESET = "\033[0m"
+GREEN = '\033[92m'
+RESET = '\033[0m'
+
 
 class Connection:
   # connection manager
@@ -27,18 +29,17 @@ class Connection:
     self.opus_reader = sphn.OpusStreamReader(self.sample_rate)
 
     self.audio_in_stream = sd.InputStream(
-      samplerate=self.sample_rate, channels=self.channels,
-      blocksize=self.frame_size, callback=self.audio_in_callback,
+      samplerate=self.sample_rate, channels=self.channels, blocksize=self.frame_size, callback=self.audio_in_callback
     )
     self.audio_out_stream = sd.OutputStream(
-      samplerate=self.sample_rate, channels=self.channels,
-      blocksize=self.frame_size, callback=self.audio_out_callback,
+      samplerate=self.sample_rate, channels=self.channels, blocksize=self.frame_size, callback=self.audio_out_callback
     )
 
     self.out_queue = queue.Queue()
 
   # Sounddevice callbacks for handling raw audio to/from the speaker and mic
-  def audio_in_callback(self, data, frames, time, status):self.opus_writer.append_pcm(data[:, 0])
+  def audio_in_callback(self, data, frames, time, status):
+    self.opus_writer.append_pcm(data[:, 0])
 
   def audio_out_callback(self, data, frames, time, status):
     try:
@@ -59,17 +60,19 @@ class Connection:
         try:
           await self.ws.send_bytes(msg)
         except Exception as e:
-          print(f"Error in send_loop: {e}")
+          print(f'Error in send_loop: {e}')
           return
 
   # receiving messages from the websocket, including text and opus stream
   async def receive_loop(self):
-    sentence = ""
+    sentence = ''
     try:
       async for msg in self.ws:
-        if shutdown_flag.is_set():break
+        if shutdown_flag.is_set():
+          break
         msg_bytes = msg.data
-        if not isinstance(msg_bytes, bytes) or len(msg_bytes) == 0:continue
+        if not isinstance(msg_bytes, bytes) or len(msg_bytes) == 0:
+          continue
 
         # First byte in message is a tag, indicating audio or text.
         tag = msg_bytes[0]
@@ -80,15 +83,15 @@ class Connection:
           self.opus_reader.append_bytes(payload)
         elif tag == 2:
           # payload is text output from the model, print it to the console
-          token = payload.decode("utf8")
+          token = payload.decode('utf8')
           sentence += token
-          sys.stdout.write(f"\r{GREEN}{sentence.lstrip()}{RESET}")
+          sys.stdout.write(f'\r{GREEN}{sentence.lstrip()}{RESET}')
           sys.stdout.flush()
-          if sentence.strip()[-1] in [".", "!", "?"]:
-            sys.stdout.write("\n")
-            sentence = ""
+          if sentence.strip()[-1] in ['.', '!', '?']:
+            sys.stdout.write('\n')
+            sentence = ''
     except Exception as e:
-      print(f"Error in receive_loop: {e}")
+      print(f'Error in receive_loop: {e}')
 
   # decoding audio from the websocket into raw pcm audio, and queueing it for playback
   async def decoder_loop(self):
@@ -110,31 +113,38 @@ class Connection:
         self.futures = asyncio.gather(self.send_loop(), self.receive_loop(), self.decoder_loop())
         await self.futures
     except asyncio.CancelledError:
-      print("Connection tasks cancelled")
+      print('Connection tasks cancelled')
 
-def sigint_handler(signum, frame):print("\n\nEnding conversation..."); shutdown_flag.set();
+
+def sigint_handler(signum, frame):
+  print('\n\nEnding conversation...')
+  shutdown_flag.set()
+
 
 async def run():
   signal.signal(signal.SIGINT, sigint_handler)
 
-  print("Connecting to", URL)
-  print("This may trigger a cold boot of the model...\n")
+  print('Connecting to', URL)
+  print('This may trigger a cold boot of the model...\n')
   async with aiohttp.ClientSession() as session:
     try:
       async with session.ws_connect(f'{"wss" if parsed.scheme == "https" else "ws"}://{parsed.netloc}/api/ws') as ws:
         connection = Connection(ws)
-        print("Connection established.")
-        print("Conversation started. Press Ctrl+C to exit.\n")
+        print('Connection established.')
+        print('Conversation started. Press Ctrl+C to exit.\n')
         await connection.run()
     except aiohttp.ClientError as e:
-      print(f"Connection error: {e}")
+      print(f'Connection error: {e}')
+
 
 def main():
   try:
     asyncio.run(run())
   except KeyboardInterrupt:
-    print("\nProgram interrupted")
+    print('\nProgram interrupted')
   finally:
-    print("Conversation complete")
+    print('Conversation complete')
 
-if __name__=="__main__":main()
+
+if __name__ == '__main__':
+  main()
