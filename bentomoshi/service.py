@@ -68,13 +68,12 @@ class Moshi:
           if tokens is None: continue
           assert tokens.shape[1] == self.lm_gen.lm_model.dep_q + 1
           pcm = self.mimi.decode(tokens[:, 1:])
-          print(c, pcm.shape, end="\r")
           all_codes.append(pcm[0, 0])
       all_codes_th = torch.cat(all_codes, dim=-1)
 
       print(f"codes {all_codes_th.shape} generated in {time.time() - start_time:.2f}s")
       roundtrip_file = pathlib.Path(ctx.temp_dir).joinpath("roundtrip_output.wav")
-      sphn.write_wav(roundtrip_file.__fspath__(), all_codes_th[0, 0].cpu().numpy(), sample_rate)
+      sphn.write_wav(roundtrip_file.__fspath__(), all_codes_th.cpu().numpy(), sample_rate)
       return roundtrip_file
 
   def reset_state(self):
