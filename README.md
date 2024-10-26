@@ -8,7 +8,7 @@ See [here](https://github.com/bentoml/BentoML?tab=readme-ov-file#%EF%B8%8F-what-
 
 ## Prerequisites
 
-If you want to test the Service locally, we recommend you use a Nvidia GPU with at least 48G VRAM.
+If you want to test the Service locally, we recommend you use a Nvidia GPU with at least 24Gb VRAM.
 
 ## Instructions
 
@@ -16,12 +16,13 @@ If you want to test the Service locally, we recommend you use a Nvidia GPU with 
 git clone https://github.com/bentoml/BentoMoshi.git && cd BentoMoshi
 
 # option 1: bentoml serve [RECOMMENDED]
-bentoml serve . --debug
+uvx bentoml serve . --debug
 
 # option 2: uv
 uvx --from . server
 ```
-To use the client, specify the `URL` envvar on bentocloud:
+
+To use the client, specify the `URL` on BentoCloud:
 
 ```bash
 # option 1: uv [RECOMMENDED]
@@ -32,7 +33,9 @@ URL=<bentocloud-endpoint> python bentomoshi/client.py
 ```
 
 > [!NOTE]
+>
 > If you are hosting this on your own server, make sure to include the port the model is served into the URL, for example:
+>
 > ```bash
 > URL=http://localhost:3000 uvx --from . client
 > ```
