@@ -5,6 +5,7 @@ labels:
   stage: "demo"
 python:
   lock_packages: false
+  requirements_txt: "./requirements.txt"
 docker:
   python_version: "3.11"
   system_packages: ["build-essential", "gcc", "git"]

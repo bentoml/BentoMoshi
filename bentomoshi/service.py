@@ -31,14 +31,13 @@ class Moshi:
     self.lm_gen.streaming_forever(1)
     self.text_tokenizer = sentencepiece.SentencePieceProcessor(os.path.join(self.path, loaders.TEXT_TOKENIZER_NAME))
 
-    # warmup GPU
+    # fmt: off
     for _ in range(4):
       chunk = torch.zeros(1, 1, self.framesize, dtype=torch.float32, device=self.device)
       codes = self.mimi.encode(chunk)
       for c in range(codes.shape[-1]):
         tokens = self.lm_gen.step(codes[:, :, c : c + 1])
-        if tokens is None:
-          continue
+        if tokens is None: continue
         _ = self.mimi.decode(tokens[:, 1:])
     torch.cuda.synchronize()
 
@@ -57,6 +56,7 @@ class Moshi:
       sample_pcm = sample_pcm[None].to(device=self.device)
 
       all_codes = []
+      text_responses = []
       print('stream encoding-decoding...')
       start_time = time.time()
 
@@ -71,12 +71,19 @@ class Moshi:
           assert tokens.shape[1] == self.lm_gen.lm_model.dep_q + 1
           pcm = self.mimi.decode(tokens[:, 1:])
           all_codes.append(pcm[0, 0])
-      all_codes_th = torch.cat(all_codes, dim=-1)
+          # Process text response
+          text_token = tokens[0, 0, 0].item()
+          if text_token not in (0, 3):  # Skip special tokens
+            text = self.text_tokenizer.id_to_piece(text_token)
+            text = text.replace('▁', ' ')
+            text_responses.append(text)
 
+      all_codes_th = torch.cat(all_codes, dim=-1)
       print(f'codes {all_codes_th.shape} generated in {time.time() - start_time:.2f}s')
-      roundtrip_file = pathlib.Path(ctx.temp_dir).joinpath('roundtrip_output.wav')
-      sphn.write_wav(roundtrip_file.__fspath__(), all_codes_th.cpu().numpy(), sample_rate)
-      return roundtrip_file
+      print(f'text tokens: {text_responses}')
+      output_file = pathlib.Path(ctx.temp_dir).joinpath('output.wav')
+      sphn.write_wav(output_file.__fspath__(), all_codes_th.cpu().numpy(), sample_rate)
+      return output_file
 
   def reset_state(self):
     # we use Opus format for audio across the websocket, as it can be safely streamed and decoded in real-time
