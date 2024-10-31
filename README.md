@@ -13,20 +13,21 @@ If you want to test the Service locally, we recommend you use a Nvidia GPU with 
 ## Instructions
 
 ```bash
+# installing uv with curl -LsSf https://astral.sh/uv/install.sh | sh
 git clone https://github.com/bentoml/BentoMoshi.git && cd BentoMoshi
 
 # option 1: bentoml serve [RECOMMENDED]
-uvx bentoml serve . --debug
+uvx --with-editable . bentoml serve . --debug
 
-# option 2: uv
+# option 2: script
 uvx --from . server
 ```
 
 To use the client, specify the `URL` on BentoCloud:
 
 ```bash
-# option 1: uv [RECOMMENDED]
-URL=<bentocloud-endpoint> uvx --from . client
+# option 1: uvx [RECOMMENDED]
+URL=<bentocloud-endpoint> uv run --with-editable . bentomoshi/client.py
 
 # option 2: using python
 URL=<bentocloud-endpoint> python bentomoshi/client.py
