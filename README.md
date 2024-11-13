@@ -7,7 +7,7 @@
 Here is the workflow after you start the server:
 
 1. You speak into your microphone. The client records the audio and sends it to the server in real-time via a WebSocket connection.
-2.  The server uses the Mimi model to process the audio and the Moshi language model to generate both text and audio responses.
+2. The server uses the Mimi model to process the audio and the Moshi language model to generate both text and audio responses.
 3. The server sends the generated text and audio back to the client.
 4. The client plays the audio through your speakers and displays the text in the terminal.
 
