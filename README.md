@@ -11,7 +11,7 @@ Here is the workflow after you start the server:
 3. The server sends the generated text and audio back to the client.
 4. The client plays the audio through your speakers and displays the text in the terminal.
 
-Check out [the full list](https://docs.bentoml.com/en/latest/use-cases/index.html) of example projects to explore more BentoML use cases.
+Check out [the full list](https://docs.bentoml.com/en/latest/examples/overview.html) of example projects to explore more BentoML use cases.
 
 ## Prerequisites
 
